@@ -1,7 +1,7 @@
-package com.aka.service
+package com.aka.services
 
-import com.aka.model.{ChatMessage, ChatMessages}
-import com.aka.model.IncomingMessage
+import com.aka.models.{ChatMessage, ChatMessages}
+import com.aka.models.IncomingMessage
 import play.api.libs.json.{JsValue, Json}
 
 import slick.jdbc.PostgresProfile.api._

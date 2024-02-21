@@ -1,4 +1,4 @@
-package com.aka.model
+package com.aka.models
 
 import slick.jdbc.PostgresProfile.api._
 
