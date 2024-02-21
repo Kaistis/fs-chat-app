@@ -2,12 +2,12 @@ package com.aka.actors
 
 import akka.actor.{Actor, ActorRef, Props, Terminated}
 import akka.http.scaladsl.model.ws.TextMessage
-import com.aka.service.DatabaseService
+import com.aka.services.DatabaseService
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
 import play.api.libs.json.Json
-import com.aka.model.ChatMessage
-import com.aka.model.IncomingMessage
+import com.aka.models.ChatMessage
+import com.aka.models.IncomingMessage
 
 object ChatRoom {
   def props(): Props = Props(new ChatRoom)
@@ -21,8 +21,8 @@ object ChatRoom {
 class ChatRoom extends Actor {
   import ChatRoom._
 
-  // Assuming you have a JSON format for ChatMessage
-  implicit val chatMessageFormat: play.api.libs.json.OFormat[com.aka.model.ChatMessage] = Json.format[ChatMessage]
+  // Assuming there is a JSON format for ChatMessage
+  implicit val chatMessageFormat: play.api.libs.json.OFormat[com.aka.models.ChatMessage] = Json.format[ChatMessage]
 
   private var clients: Set[ActorRef] = Set.empty
 

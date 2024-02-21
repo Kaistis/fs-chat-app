@@ -1,4 +1,4 @@
-package com.aka.model
+package com.aka.models
 
 import play.api.libs.json.{Json, OFormat}
 

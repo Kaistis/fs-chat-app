@@ -7,7 +7,7 @@ import com.aka.actors.ChatRoom
 import com.aka.streams.WebSocketFlow
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
-import com.aka.service.DatabaseService
+import com.aka.services.DatabaseService
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
 
@@ -19,7 +19,7 @@ object ChatServer {
 
     val chatRoom = system.actorOf(ChatRoom.props(), "chatRoom")
     val settings = CorsSettings.defaultSettings.withAllowGenericHttpRequests(false)
-    val route = cors(settings) { // Wrap your route with the CORS directive
+    val route = cors(settings) { // Wrap the route with the CORS directive
       path("chat") {
         get {
           handleWebSocketMessages(WebSocketFlow.create(chatRoom))
