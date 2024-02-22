@@ -6,7 +6,11 @@
         <q-badge v-if="connection_error" color="red" label="Error" />
       </h4>
 
-      <q-scroll-area class="chat-messages q-pa-md" style="height: 60vh">
+      <q-scroll-area
+        ref="scrollArea"
+        class="chat-messages q-pa-md"
+        style="height: 60vh"
+      >
         <div class="q-mb-md q-message-name">
           <q-chat-message
             v-for="(msg, idx) in messages"
@@ -21,6 +25,7 @@
 
       <div class="send-zone q-mt-md">
         <q-input
+          ref="messageInput"
           v-model="new_message"
           outlined
           placeholder="Type a message"
@@ -33,7 +38,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
+import { defineComponent, ref, nextTick, onMounted, onUnmounted } from 'vue';
+import { useAuthStore } from 'src/stores/auth';
 
 interface Message {
   username: string;
@@ -42,29 +48,40 @@ interface Message {
 }
 
 export default defineComponent({
-  name: 'ChatPage',
+  name: 'ChatComponent',
   setup() {
+    const messageInput = ref(null); // TODO: add focus
+    const scrollArea = ref(null);
+    const authStore = useAuthStore();
     const connection_ready = ref(false);
     const connection_error = ref(false);
     const new_message = ref('');
     const messages = ref<Message[]>([]);
-    const nickname = ref(''); // Add a ref to store the nickname
     let websocket: WebSocket | null = null;
 
-    // Method to prompt for nickname
-    const promptForNickname = () => {
-      const enteredNickname = prompt('Please enter your nickname:');
-      if (enteredNickname) {
-        nickname.value = enteredNickname;
-      } else {
-        nickname.value = 'Anonymous'; // Default nickname if none entered
-      }
+    // Function to scroll to the bottom
+    const animateScroll = () => {
+      nextTick(() => {
+        const scrollTarget = scrollArea.value?.getScrollTarget();
+        const duration = 300; // ms - use 0 to instant scroll
+        scrollArea.value?.setScrollPosition(
+          'vertical',
+          scrollTarget.scrollHeight,
+          duration
+        );
+      });
+    };
+
+    const setFocus = () => {
+      nextTick(() => {
+        messageInput.value?.focus();
+      });
     };
 
     const send_message = () => {
       if (new_message.value.trim() && websocket) {
         const messageToSend = {
-          username: nickname.value,
+          username: authStore.getUsername,
           message: new_message.value,
         };
         websocket.send(JSON.stringify(messageToSend));
@@ -73,7 +90,6 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      promptForNickname(); // Prompt for nickname when the component is mounted
       websocket = new WebSocket('ws://localhost:8080/chat');
 
       websocket.onopen = () => {
@@ -82,23 +98,25 @@ export default defineComponent({
 
       websocket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-
         if (Array.isArray(data)) {
-          // Assuming the message history is the only array sent
           messages.value = data.map((msg) => ({
-            username: msg.username === nickname.value ? 'me' : msg.username,
+            username:
+              msg.username === authStore.getUsername ? 'me' : msg.username,
             message: msg.message,
             timestamp: new Date(msg.timestamp).toLocaleTimeString(),
           }));
         } else {
-          // Handle a new incoming message
           const received: Message = {
-            username: data.username === nickname.value ? 'me' : data.username,
+            username:
+              data.username === authStore.getUsername ? 'me' : data.username,
             message: data.message,
             timestamp: new Date(data.timestamp).toLocaleTimeString(),
           };
           messages.value.push(received);
         }
+
+        animateScroll(); // Also scroll to bottom when the component is mounted
+        setFocus(); // Set focus on message input
       };
 
       websocket.onerror = () => {
@@ -116,6 +134,10 @@ export default defineComponent({
       new_message,
       messages,
       send_message,
+      scrollArea,
+      animateScroll,
+      messageInput,
+      setFocus,
     };
   },
 });

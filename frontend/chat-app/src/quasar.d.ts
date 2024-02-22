@@ -7,3 +7,11 @@
 //  this declaration also apply `quasar` own
 //  augmentations (eg. adds `$q` into Vue component context)
 /// <reference types="@quasar/app-vite" />
+
+import 'quasar';
+
+declare module 'quasar' {
+  interface QVueGlobals {
+    scroll: any; // You can replace `any` with a more specific type if you know it
+  }
+}

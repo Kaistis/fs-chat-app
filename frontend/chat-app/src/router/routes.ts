@@ -1,18 +1,22 @@
 import { RouteRecordRaw } from 'vue-router';
 
-const routes: RouteRecordRaw[] = [
+const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
+      // Define a route for the authentication page as the default route
+      { path: '', component: () => import('pages/AuthPage.vue') },
       // Define a route for the chat page
-      { path: '', component: () => import('pages/ChatPage.vue') },
-      // You can add more routes here for other pages of your application
+      {
+        path: '/chat',
+        component: () => import('pages/ChatPage.vue'),
+        props: {
+          default: true,
+        },
+      },
     ],
   },
-
-  // Always leave this as the last one,
-  // but you can also remove it if you don't want to navigate to a 404 page
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),
